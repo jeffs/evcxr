@@ -253,6 +253,9 @@ struct Options {
     #[clap(long, default_value = "emacs")]
     edit_mode: EditMode,
 
+    #[clap(short, long)]
+    quiet: bool,
+
     /// Extra arguments; ignored, but show up in std::env::args() which is passed to the subprocess
     /// (see child_process.rs).
     _extra_args: Vec<String>,
@@ -273,16 +276,19 @@ fn main() -> Result<()> {
     #[cfg(windows)]
     colored::control::set_virtual_terminal(true).ok();
 
-    println!("Welcome to evcxr. For help, type :help");
+    if !options.quiet {
+        println!("Welcome to evcxr. For help, type :help");
+    }
+
     // Print this now, because we silence `:load_config` (writing to stdout
     // interferes with rustyline somewhat).
     if let Some(cfg) = evcxr::config_dir() {
         let init = cfg.join("init.evcxr");
-        if init.exists() {
+        if !options.quiet && init.exists() {
             println!("Startup commands will be loaded from {}", init.display());
         }
         let prelude = cfg.join("prelude.rs");
-        if prelude.exists() {
+        if !options.quiet && prelude.exists() {
             println!("Prelude will be loaded from {}", prelude.display());
         }
     }
